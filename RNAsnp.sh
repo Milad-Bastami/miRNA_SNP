@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+set -e
+set -o pipefail
+set -u 
 
 #
 # This scripts runs RNAsnp program on a set of 3'UTR:snp pairs
@@ -14,33 +17,56 @@
 
 usage() {
     echo -e 'Runs RNAsnp program to compute effect of snps on utr sequences. \n'
-    echo -e "usage: bash $0 -f|--utrs  -s|--snps  [-m|--mode"]
-    echo "-f|--utrs: required. A text file containing one 3'UTR seq per line. Should have exact number of lines as -s file."
-    echo "-s|--snps: required. A text file containing one snp per line.e.g. A43G in line 1, represents information of the polymorphism 
+    echo -e "usage: $0 [-f|--utrs] [-s|--snps] [-m|--mode"]
+    echo "              -f|--utrs: required. A text file containing one 3'UTR seq per line. Should have exact number of lines as -s file."
+    echo "              -s|--snps: required. A text file containing one snp per line.e.g. A43G in line 1, represents information of the polymorphism 
          related to UTR seq in line 1 of utrs file. Positions are relative to UTR seq."
-    echo "-m|--mode: optional. Which mode of RNAsnp should be used. Default is mode 1 of RNAsnp"
+    echo "              -m|--mode: optional. Which mode of RNAsnp should be used 1 or 2. Default is mode 1 of RNAsnp"
     exit 1    
 }
+
+## default values
+utrs=Unset
+snps=unset
+mode='1'
 
 ## read & check options ##
 
 # read options
-opts=$(getopt -o f:s:m:: --long --utrs:,--snps:,--mode:: -- "$@")
+opts=$(getopt -n RNAsnp -o f:s:m:h --long --utrs:,--snps:,--mode::,--help -- "$@")
+
 #  print usage if options are incorrect
-[$? -eq 0] || {echo -e 'incorrect options\n' && usage && exit 1}
+valid_options=$?
+
+[ $valid_options -eq 0 -o $# -eq 0 ] || { 
+    echo -e 'incorrect options \n'
+    usage 
+}
+
+# # check number of passed options
+# [[ ( $# != "-h" ) || () ]] && { echo "at least two arguments (i.e. -f and -s) should be passed" }
+
+# set script positional parameters
 eval set --  "$opts"
 
-## assigning options to variables
-while true; do
+## assigning options to variables ##
+while true
+do
   case "$1" in
-    -f | --utrs) shift; utrs=$1
+    -f | --utrs) utrs=$2; shift 2
         ;;
-    -s | --snps) shift; snps=$1
+    -s | --snps) snps=$2; shift 2
         ;;
-    -m | --mode) shift; mode=$1
+    -m | --mode) mode=$2; shift 2
         ;;
+    -h | --help) usage
+        ;;     
     --) shift; break
-        ;;
-    *) echo "Unexpected option: $1"; usage ;;    
+        ;;    
+    * ) echo -e "Unexpected option: $1 \n"; usage ;;    
    esac
-done                 
+done
+
+echo "utrs is ${utrs}"
+echo "snps is ${snps}"
+echo "mode is ${mode}"
