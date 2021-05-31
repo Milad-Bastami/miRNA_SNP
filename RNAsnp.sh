@@ -30,3 +30,17 @@ opts=$(getopt -o f:s:m:: --long --utrs:,--snps:,--mode:: -- "$@")
 [$? -eq 0] || {echo -e 'incorrect options\n' && usage && exit 1}
 eval set --  "$opts"
 
+## assigning options to variables
+while true; do
+  case "$1" in
+    -f | --utrs) shift; utrs=$1
+        ;;
+    -s | --snps) shift; snps=$1
+        ;;
+    -m | --mode) shift; mode=$1
+        ;;
+    --) shift; break
+        ;;
+    *) echo "Unexpected option: $1"; usage ;;    
+   esac
+done                 
