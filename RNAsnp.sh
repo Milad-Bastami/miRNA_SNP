@@ -21,3 +21,12 @@ usage() {
     echo "-m|--mode: optional. Which mode of RNAsnp should be used. Default is mode 1 of RNAsnp"
     exit 1    
 }
+
+## read & check options ##
+
+# read options
+opts=$(getopt -o f:s:m:: --long --utrs:,--snps:,--mode:: -- "$@")
+#  print usage if options are incorrect
+[$? -eq 0] || {echo -e 'incorrect options\n' && usage && exit 1}
+eval set --  "$opts"
+
