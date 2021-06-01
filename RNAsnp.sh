@@ -50,20 +50,19 @@ valid_options=$?
 eval set --  "$opts"
 
 ## assigning options to variables ##
-while true
-do
-  case "$1" in
-    -f | --utrs) utrs=$2; shift 2
-        ;;
-    -s | --snps) snps=$2; shift 2
-        ;;
-    -m | --mode) mode=$2; shift 2
-        ;;
-    -h | --help) usage
-        ;;     
-    --) shift; break
-        ;;    
-    * ) echo -e "Unexpected option: $1 \n"; usage ;;    
+while getopts ":f:s:m:h" opt; do
+   case ${opt}} in
+        f) utrs=$2; shift 2
+            ;;
+        s) snps=$2; shift 2
+            ;;
+        m) mode=$2; shift 2
+            ;;
+        h) usage
+            ;;     
+        \?) echo "Invalid option: $OPTARG"
+            ;;    
+        * ) echo -e "Unexpected option: $1 \n"; usage ;;    
    esac
 done
 
