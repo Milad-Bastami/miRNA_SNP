@@ -26,7 +26,7 @@ usage() {
     exit 1    
 }
 
-# default values
+## default values ##
 UTR=''
 SNP=''
 MODE=1  # default is mode 1
@@ -40,11 +40,22 @@ while getopts ':f:s:m:h' opt; do
       (h)   usage;;
       (:)   # "optional arguments" (missing option-argument handling)
             case $OPTARG in
-              (f) echo "Sequence file is required"; exit 1;; # error, according to our syntax
-              (s) echo "SNP file is reguired"; exit 1;;
-              (m) echo "$0: Warning! You passed no mode. keep using default mode (i.e. 1)"; :;;     # acceptable but keeps using mode 1
+              (f) echo "Sequence file is required" && exit 1;; # error, according to our syntax
+              (s) echo "SNP file is reguired" && exit 1;;
+              (m) echo "$0: Warning! You passed no mode. keep using default mode (i.e. 1)" && :;;     # acceptable but keeps using mode 1
             esac;;
     esac
 done
 
 shift "$OPTIND"
+
+## check if files exist ##
+[[ -e $UTR ]] || { echo "Sequence file ($UTR) doesnot exist! provide a valid seq file." && exit 1; }
+[[ -e $SNP ]] || { echo "SNP file ($SNP) doesnot exist! provide a valid snp file." && exit 1; }
+
+## number of sequences should match with snps
+[[ `cat $UTR | wc -l` == `cat $SNP | wc -l` ]] || { echo "number of sequences should match that of snps. Check the files" && exit 1; }
+
+
+num_pairs=$(cat $UTR | wc -l) # number of iterations for RNAsnp program
+
