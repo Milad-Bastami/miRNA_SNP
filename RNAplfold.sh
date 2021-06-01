@@ -39,3 +39,17 @@ done
 ## check files compatibility
 [[ $(cat "$WILD" | wc -l) -eq $(cat "$MUT" | wc -l) ]] || { echo "equal number of wildtype & mutant sequences is expected" && exit 1; }
 [[ $(cat "$WILD" | wc -l) -eq $(cat "$INT" | wc -l) ]] || { echo "interval file should contain a row for each wildtype/mutant sequence" && exit 1; }
+
+## number of iterations is equal for wildtype and mutant sequences ##
+num_seqs=$(cat $WILD | wc -l)
+
+# looping through sequences and running RNAplfold
+for x in $(seq 1 1 $num_seqs); do
+    wt=$(mktemp) || exit 1
+    mt=$(mktemp) || exit 1
+    awk -v lineNum=$x '{if (NR == lineNum) {print $0}}' "$WILD" > $wt
+    awk -v lineNum=$x '{if (NR == lineNum) {print $0}}' "$MUT"  > $mt
+    RNAplfold -u 21 -W 80 -L 40 < $wt   # default RNAplfold parameters
+    RNAplfold -u 21 -W 80 -L 40 < $mt
+    rm -f "$wt" "$mt"
+done
