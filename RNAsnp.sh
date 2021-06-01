@@ -26,11 +26,21 @@ usage() {
     exit 1    
 }
 
+## Check if RNAsnp is installed ##
+if $(where RNAsnp)
+then
+    path = $(where RNAsnp)
+else
+    print "RNAsnp is not installed on your sysrem !!!" && exit 1
+fi
+
 ## default values ##
 UTR=''
 SNP=''
 MODE=1  # default is mode 1
+path=$(where RNAsnp)
 
+export RNASNPPATH=$path
 
 while getopts ':f:s:m:h' opt; do
     case $opt in
@@ -56,6 +66,16 @@ shift "$OPTIND"
 ## number of sequences should match with snps
 [[ `cat $UTR | wc -l` == `cat $SNP | wc -l` ]] || { echo "number of sequences should match that of snps. Check the files" && exit 1; }
 
+## number of iterations for RNAsnp program ##
+num_pairs=$(cat $UTR | wc -l)
 
-num_pairs=$(cat $UTR | wc -l) # number of iterations for RNAsnp program
+## creat the  output file ##
+touch output_mode${mode}.txt
 
+## loop through files and run RNAsnp seperately on each UTR:snp pair ##
+# the result is stored in current directory
+for x in $(seq 1 1 $num_pairs); do
+    seq=$(awk -v lineNum=$x '{if (NR == lineNum) {print $0}}' "${UTR}")
+    snp=$(awk -v lineNum=$x '{if (NR == lineNum) {print $0}}' "${SNP}")
+    RNAsnp -f $seq -s $snp -m $mode >>./output_mode${mode}.txt
+done
