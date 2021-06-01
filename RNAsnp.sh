@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-set -e
-set -o pipefail
-set -u 
+
+# set -e
+# set -o pipefail
+# set -u 
 
 #
 # This scripts runs RNAsnp program on a set of 3'UTR:snp pairs
@@ -25,47 +26,25 @@ usage() {
     exit 1    
 }
 
-## default values
-utrs=Unset
-snps=unset
-mode='1'
+# default values
+UTR=''
+SNP=''
+MODE=1  # default is mode 1
 
-## read & check options ##
 
-# read options
-opts=$(getopt -n RNAsnp -o f:s:m:h --long --utrs:,--snps:,--mode::,--help -- "$@")
-
-#  print usage if options are incorrect
-valid_options=$?
-
-[ $valid_options -eq 0 -o $# -eq 0 ] || { 
-    echo -e 'incorrect options \n'
-    usage 
-}
-
-# # check number of passed options
-# [[ ( $# != "-h" ) || () ]] && { echo "at least two arguments (i.e. -f and -s) should be passed" }
-
-# set script positional parameters
-eval set --  "$opts"
-
-## assigning options to variables ##
-while getopts ":f:s:m:h" opt; do
-   case ${opt}} in
-        f) utrs=$2; shift 2
-            ;;
-        s) snps=$2; shift 2
-            ;;
-        m) mode=$2; shift 2
-            ;;
-        h) usage
-            ;;     
-        \?) echo "Invalid option: $OPTARG"
-            ;;    
-        * ) echo -e "Unexpected option: $1 \n"; usage ;;    
-   esac
+while getopts ':f:s:m:h' opt; do
+    case $opt in
+      (f)   UTR=$OPTARG;;
+      (s)   SNP=$OPTARG;;
+      (m)   MODE=$OPTARG;;
+      (h)   usage;;
+      (:)   # "optional arguments" (missing option-argument handling)
+            case $OPTARG in
+              (f) echo "Sequence file is required"; exit 1;; # error, according to our syntax
+              (s) echo "SNP file is reguired"; exit 1;;
+              (m) echo "$0: Warning! You passed no mode. keep using default mode (i.e. 1)"; :;;     # acceptable but keeps using mode 1
+            esac;;
+    esac
 done
 
-echo "utrs is ${utrs}"
-echo "snps is ${snps}"
-echo "mode is ${mode}"
+shift "$OPTIND"
