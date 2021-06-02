@@ -45,11 +45,13 @@ num_seqs=$(cat $WILD | wc -l)
 
 # looping through sequences and running RNAplfold
 for x in $(seq 1 1 $num_seqs); do
-    wt=$(mktemp) || exit 1
-    mt=$(mktemp) || exit 1
-    awk -v lineNum=$x '{if (NR == lineNum) {print $0}}' "$WILD" > $wt
-    awk -v lineNum=$x '{if (NR == lineNum) {print $0}}' "$MUT"  > $mt
-    RNAplfold -u 21 -W 80 -L 40 < $wt   # default RNAplfold parameters
-    RNAplfold -u 21 -W 80 -L 40 < $mt
-    rm -f "$wt" "$mt"
+
+    awk -v lineNum=$x '{if (NR == lineNum) {print $0}}' "$WILD" | \    # select 1 wildtype sequence
+        RNAplfold -u 21 -W 80 -L 40 | \                                # run RNAplfold with default params
+        tail -n +3 - > wt.tmp                                          # remove the top 2 lines
+
+    awk -v lineNum=$x '{if (NR == lineNum) {print $0}}' "$MUT" | \
+        RNAplfold -u 21 -W 80 -L 40 | \
+        tail -n +3 - > mt.tmp
+    rm -f *.tmp
 done
