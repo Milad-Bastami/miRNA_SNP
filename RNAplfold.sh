@@ -1,21 +1,45 @@
 #!/usr/bin/env bash
 
-'''
+: '
+This script computes the sum of accessibility values for
+nucleotides within the interval of 3UTR miRNA binding site 
+(intervals are inclusive).
+The process is repeated for sequences with either 
+wildtype or mutant allele
+'
 
-'''
+usage(){
+    echo "usage: $0 [-w wfile] [-m mfile] [-i intfile] [-h]"
+    echo "           -w: specify a file containing one wildetype seq/line"
+    echo "           -m: specify a file containing corresponding mutant seqs"
+    echo "           -i: specify a file containing intervals of target sites"
+    echo "           -h: show this message"
+    exit 1
+}
 
-## variables & default vales##
+## variables (inputs) ##
 
-# the file containing 3UTR sequences
-# with wild type allele (one seq per line)
+: '
+the file containing 3UTR sequences
+with wild type allele (one seq per line)
+'
 WILD='' 
-# the file containing 3UTR sequences 
-# with mutant allele (one seq per line)
-MUT=''  
-# the interval file (seqname \t start \t end) 
-# contains position of a target site within 
-# each sequence
+
+: '
+the file containing 3UTR sequences
+with mutant allele (one seq per line)
+'
+MUT='' 
+
+
+: '
+The interval file (seqname \t start \t end) 
+contains position of a target site within 
+each sequence
+'
 INT=''
+
+## Parsing the options ##
 
 while getopts ':w:m:i:h' opt; do
     case $opt in
