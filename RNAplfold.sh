@@ -43,15 +43,29 @@ done
 ## number of iterations is equal for wildtype and mutant sequences ##
 num_seqs=$(cat $WILD | wc -l)
 
-# looping through sequences and running RNAplfold
+## creating output files ##
+# going to store: seq number, interval
+# start & end, sum of accessibility
+touch wildetype.txt
+touch mutant.txt
+
+## looping through sequences, running RNAplfold and computing sum accessibility within interval##
 for x in $(seq 1 1 $num_seqs); do
+    # select the interval region for this sequence
+    awk -v lineNum=$x '{if (NR == lineNum) {start=$2; end=$3}}' "$INT" 
 
-    awk -v lineNum=$x '{if (NR == lineNum) {print $0}}' "$WILD" | \    # select 1 wildtype sequence
-        RNAplfold -u 21 -W 80 -L 40 | \                                # run RNAplfold with default params
-        tail -n +3 - > wt.tmp                                          # remove the top 2 lines
+    awk -v lineNum=$x '{if (NR == lineNum) {print $0}}' "$WILD" | \   # select one wildtype sequence (i.e. number $x)
+        RNAplfold -u 21 -W 80 -L 40 | \                               # run RNAplfold with default params
+        tail -n +3 - > wt.tmp                                         # remove the top 2 lines
 
+    # calculate the sum of accessibility values within interval
+    awk -v start=$start -v end=$end -v seq_num=$x 'NR==start,NR==end {sum+=$2} END {print seq_num,start,end,sum}' "$wt.tmp" >> wildetype.txt
+
+    # repeat the process for mutant sequence
     awk -v lineNum=$x '{if (NR == lineNum) {print $0}}' "$MUT" | \
         RNAplfold -u 21 -W 80 -L 40 | \
         tail -n +3 - > mt.tmp
+    awk -v start=$start -v end=$end -v seq_num=$x 'NR==start,NR==end {sum+=$2} END {print seq_num,start,end,sum}' "$mt.tmp" >> mutant.txt
+
     rm -f *.tmp
 done
